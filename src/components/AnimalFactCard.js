@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { getRandomAnimalFact } from '../utils/api';
 import Row from './_base/Row';
 
 /**
@@ -13,21 +14,45 @@ import Row from './_base/Row';
  */
 
 function AnimalFactCard({ animal }) {
-  const [image, setImage] = React.useState(null);
-  const [fact, setFact] = React.useState(null);
+    const [image, setImage] = React.useState(null);
+    const [fact, setFact] = React.useState(null);
 
-  return (
-    <section>
-      <Row label="Image">
-        {image === null ? (
-          <img src="https://via.placeholder.com/600x400" alt="placeholder" />
-        ) : (
-          <img src={image} alt={fact} />
-        )}
-      </Row>
-      <Row label="Fact">{fact === null ? <p>Loading fact ...</p> : <p>{fact}</p>}</Row>
-    </section>
-  );
+    useEffect(() => {
+        getRandomAnimalFact(animal).then(({ fact, image }) => {
+            setFact(fact);
+            setImage(image);
+        });
+
+        return () => {
+            setFact(null);
+            setImage(null);
+        };
+    }, [animal]);
+
+	useEffect(() => {
+		if(fact !== null) {
+			document.title = fact;
+		}
+	}, [fact]);
+
+	const factChangeHandler = (event) => {
+		setFact(event.target.value);
+	}
+
+    return (
+        <section>
+            <Row label="Image">
+                {image === null ? (
+                    <img src="https://via.placeholder.com/600x400" alt="placeholder" />
+                ) : (
+                    <img src={image} alt={fact} />
+                )}
+            </Row>
+            <Row label="Fact">
+				{fact === null ? <p>Loading fact ...</p> : <textarea value={fact} onChange={factChangeHandler} />}
+			</Row>
+        </section>
+    );
 }
 
 export default AnimalFactCard;
